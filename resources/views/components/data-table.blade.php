@@ -1,114 +1,122 @@
-@props(['columnsTable' => [], 'rows' => [], 'fields' => [], 'routeEdit' => null])
+@props(['columnsTable' => [], 'rows' => [], 'fields' => [], 'routeEdit' => null, 'routeDestroy' => null])
 
 <div>
-    <!-- Versión de escritorio -->
-    <div class="hidden md:block">
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        @foreach($columnsTable as $col)
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                {{$col}}
-                            </th>
-                        @endforeach
-                    </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                    @forelse($rows as $row)
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            @foreach($fields as $field)
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    @if($field === 'active')
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                            {{ data_get($row, $field) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                            {{ data_get($row, $field) ? 'Activo' : 'Inactivo' }}
-                                        </span>
-                                    @elseif($field === 'color')
-                                        <div class="flex items-center">
-                                            <div class="w-4 h-4 rounded-full border-2 border-gray-300 mr-2"
-                                                 style="background-color: {{ data_get($row, $field) }}"></div>
-                                            {{ data_get($row, $field) }}
-                                        </div>
-                                    @else
-                                        {{ data_get($row, $field) }}
-                                    @endif
-                                </td>
-                            @endforeach
-                            @if($routeEdit)
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ route($routeEdit, $row->id) }}"
-                                       class="text-indigo-600 hover:text-indigo-900 transition-colors duration-150">
-                                        <i class="fa-solid fa-edit mr-1"></i>Editar
-                                    </a>
-                                </td>
-                            @endif
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ count($columnsTable) }}" class="px-6 py-12 text-center text-gray-500">
-                                <div class="text-gray-400 mb-2">
-                                    <i class="fa-solid fa-inbox text-3xl"></i>
-                                </div>
-                                No hay datos disponibles
-                            </td>
-                        </tr>
-                    @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Versión móvil -->
-    <div class="md:hidden space-y-4">
-        @forelse($rows as $row)
-            <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
-                @foreach($fields as $index => $field)
-                    <div class="flex justify-between items-center {{ $index > 0 ? 'mt-2 pt-2 border-t border-gray-100' : '' }}">
-                        <span class="text-sm font-medium text-gray-500">{{ $columnsTable[$index] ?? $field }}</span>
-                        <span class="text-sm text-gray-900 text-right">
+    <div class="relative overflow-x-auto mb-4 card">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+                @foreach($columnsTable as $col)
+                    <th scope="col" class="px-6 py-3">
+                        {{$col}}
+                    </th>
+                @endforeach
+            </tr>
+            </thead>
+            <tbody>
+            @foreach($rows as $row)
+                <tr class="bg-white border-b border-gray-200">
+                    @foreach($fields as $field)
+                        <td class="px-6 py-4">
                             @if($field === 'active')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                    {{ data_get($row, $field) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ data_get($row, $field) ? 'Activo' : 'Inactivo' }}
+                                <span class="px-2 py-1 text-xs rounded-full {{ $row->active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $row->active ? 'Activo' : 'Inactivo' }}
                                 </span>
                             @elseif($field === 'color')
-                                <div class="flex items-center justify-end">
-                                    <div class="w-3 h-3 rounded-full border border-gray-300 mr-1"
-                                         style="background-color: {{ data_get($row, $field) }}"></div>
-                                    <span class="text-xs">{{ data_get($row, $field) }}</span>
+                                <div class="flex items-center">
+                                    <div class="w-6 h-6 rounded-full mr-2" style="background-color: {{ data_get($row, $field) }}"></div>
+                                    {{ data_get($row, $field) }}
                                 </div>
+                            @elseif($field === 'difficulty')
+                                <span class="px-2 py-1 text-xs font-medium rounded-full
+                                    @if(data_get($row, $field) === 'principiante') bg-green-100 text-green-800
+                                    @elseif(data_get($row, $field) === 'intermedio') bg-yellow-100 text-yellow-800
+                                    @elseif(data_get($row, $field) === 'avanzado') bg-red-100 text-red-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ ucfirst(data_get($row, $field)) }}
+                                </span>
+                            @elseif($field === 'formatted_price')
+                                <span class="font-semibold text-green-600">
+                                    {{ data_get($row, $field) ?? ('S/ ' . number_format(data_get($row, 'price'), 2)) }}
+                                </span>
                             @else
-                                {{ data_get($row, $field) }}
+                                <span class="truncate" title="{{ data_get($row, $field) }}">
+                                    {{ Str::limit(data_get($row, $field) ?? 'N/A', 30) }}
+                                </span>
                             @endif
-                        </span>
-                    </div>
-                @endforeach
-                @if($routeEdit)
-                    <div class="mt-3 pt-3 border-t border-gray-100">
-                        <a href="{{ route($routeEdit, $row->id) }}"
-                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors duration-150">
-                            <i class="fa-solid fa-edit mr-2"></i>Editar
-                        </a>
-                    </div>
-                @endif
-            </div>
-        @empty
-            <div class="text-center py-12">
-                <div class="text-gray-400 mb-4">
-                    <i class="fa-solid fa-inbox text-4xl"></i>
-                </div>
-                <p class="text-gray-500">No hay datos disponibles</p>
-            </div>
-        @endforelse
+                        </td>
+                    @endforeach
+
+                    @if($routeEdit || $routeDestroy)
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-2">
+                                @if($routeEdit)
+                                    <a href="{{ route($routeEdit, $row->id) }}"
+                                       class="text-blue-500 hover:underline mr-2">
+                                        Editar
+                                    </a>
+                                @endif
+
+                                @if($routeDestroy)
+                                    <form action="{{ route($routeDestroy, $row->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button"
+                                                onclick="confirmDelete(this)"
+                                                class="text-red-500 hover:underline">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                        </td>
+                    @endif
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
     </div>
 
-    <!-- Paginación, si aplica -->
     @if(method_exists($rows, 'links'))
-        <div class="mt-6">
+        <div class="mt-4">
             {{ $rows->links() }}
         </div>
     @endif
 </div>
+
+<script>
+    function confirmDelete(button) {
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2",
+                cancelButton: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mx-2"
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            title: "¿Estás seguro?",
+            text: "No podrás revertir esta acción!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, eliminar!",
+            cancelButtonText: "No, cancelar!",
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                button.closest('form').submit();
+
+                swalWithBootstrapButtons.fire({
+                    title: "Eliminado!",
+                    text: "La categoría ha sido eliminada.",
+                    icon: "success"
+                });
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                swalWithBootstrapButtons.fire({
+                    title: "Cancelado",
+                    text: "Tu categoría está a salvo :)",
+                    icon: "error"
+                });
+            }
+        });
+    }
+</script>

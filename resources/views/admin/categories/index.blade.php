@@ -1,7 +1,7 @@
 <x-admin-layout :breadcrumbs="[
     [
         'name' => 'Dashboard',
-        'route' => route('admin.categories.index')
+        'route' => route('admin.dashboard')
     ],
     [
         'name' => 'Categorías',
@@ -14,5 +14,6 @@
         :rows="$categories"
         :fields="['id', 'name', 'slug', 'color', 'sort_order', 'active']"
         routeEdit="admin.categories.edit"
+        routeDestroy="admin.categories.destroy"
     ></x-data-table>
 </x-admin-layout>

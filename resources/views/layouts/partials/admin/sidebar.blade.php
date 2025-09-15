@@ -15,8 +15,8 @@ $links = [
     [
         'icon' => 'fa-solid fa-file-excel',
         'name' => 'Plantillas',
-        'url' => '#',
-        'active' => false
+        'url' => route('admin.templates.index'),
+        'active' => request()->routeIs('admin.templates.*')
     ]
 ]
 ?>
