@@ -35,6 +35,9 @@ class TemplateController extends Controller
      */
     public function store(Request $request)
     {
+        // SOLUCIÓN: Procesar el textarea de características antes de la validación
+        $this->preprocessFormData($request);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -51,6 +54,7 @@ class TemplateController extends Controller
             'concepts_explanation' => 'nullable|string',
             'active' => 'required|boolean'
         ]);
+
         // Upload Excel file
         $excelFile = $request->file('excel_file');
         $excelPath = $excelFile->store('templates/excel', 'public');
@@ -103,9 +107,9 @@ class TemplateController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Template $template)
     {
-        //
+        return view('admin.templates.show', compact('template'));
     }
 
     /**
@@ -123,6 +127,9 @@ class TemplateController extends Controller
      */
     public function update(Request $request, Template $template)
     {
+        // SOLUCIÓN: Procesar el textarea de características antes de la validación
+        $this->preprocessFormData($request);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -193,9 +200,133 @@ class TemplateController extends Controller
      */
     public function destroy(Template $template)
     {
+        // Opcional: Eliminar archivos físicos antes de eliminar el registro
+        $this->deleteTemplateFiles($template);
+
         $template->delete();
 
         return redirect()->route('admin.templates.index')
             ->with('success', 'Plantilla eliminada exitosamente.');
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Preprocesat los datos del formulario
+     * Convierte los textarea en arrays para la validación
+     */
+    private function preprocessFormData(Request $request)
+    {
+        // Procesar características desde textarea a array
+        if ($request->has('features_text')) {
+            $featuresText = $request->input('features_text');
+            $features = array_filter(
+                array_map('trim', explode("\n", $featuresText)),
+                function($feature) {
+                    return !empty($feature);
+                }
+            );
+            $request->merge(['features' => $features]);
+        }
+
+        // Procesar videos de YouTube desde textarea a array
+        if ($request->has('youtube_videos_text')) {
+            $videosText = $request->input('youtube_videos_text');
+            $videos = array_filter(
+                array_map('trim', explode("\n", $videosText)),
+                function($video) {
+                    return !empty($video);
+                }
+            );
+            $request->merge(['youtube_videos' => $videos]);
+        }
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Eliminar archivos físicos de una plantilla
+     */
+    private function deleteTemplateFiles(Template $template)
+    {
+        $storage = \Storage::disk('public');
+
+        // Eliminar archivo Excel
+        if ($template->excel_file && $storage->exists($template->excel_file)) {
+            $storage->delete($template->excel_file);
+        }
+
+        // Eliminar imagen principal
+        if ($template->main_image && $storage->exists($template->main_image)) {
+            $storage->delete($template->main_image);
+        }
+
+        // Eliminar imágenes de preview
+        if ($template->preview_images && is_array($template->preview_images)) {
+            foreach ($template->preview_images as $previewImage) {
+                if ($storage->exists($previewImage)) {
+                    $storage->delete($previewImage);
+                }
+            }
+        }
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Activar/Desactivar una plantilla
+     */
+    public function toggleStatus(Template $template)
+    {
+        $template->update(['active' => !$template->active]);
+
+        $status = $template->active ? 'activada' : 'desactivada';
+
+        return redirect()->route('admin.templates.index')
+            ->with('success', "Plantilla {$status} exitosamente.");
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Marcar/Desmarcar como destacada
+     */
+    public function toggleFeatured(Template $template)
+    {
+        $template->update(['featured' => !$template->featured]);
+
+        $status = $template->featured ? 'marcada como destacada' : 'desmarcada como destacada';
+
+        return redirect()->route('admin.templates.index')
+            ->with('success', "Plantilla {$status} exitosamente.");
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Duplicar una plantilla
+     */
+    public function duplicate(Template $template)
+    {
+        $newTemplate = $template->replicate();
+        $newTemplate->name = $template->name . ' (Copia)';
+        $newTemplate->slug = Str::slug($newTemplate->name);
+        $newTemplate->featured = false;
+        $newTemplate->active = false;
+        $newTemplate->downloads = 0;
+        $newTemplate->rating = 0;
+        $newTemplate->save();
+
+        return redirect()->route('admin.templates.edit', $newTemplate)
+            ->with('success', 'Plantilla duplicada exitosamente. Recuerda subir nuevos archivos.');
+    }
+
+    /**
+     * NUEVA FUNCIÓN: Estadísticas básicas
+     */
+    public function stats()
+    {
+        $stats = [
+            'total_templates' => Template::count(),
+            'active_templates' => Template::where('active', true)->count(),
+            'featured_templates' => Template::where('featured', true)->count(),
+            'total_downloads' => Template::sum('downloads'),
+            'categories_with_templates' => TemplateCategory::has('templates')->count(),
+            'average_rating' => Template::where('rating', '>', 0)->avg('rating'),
+            'recent_templates' => Template::latest()->take(5)->get(),
+            'top_templates' => Template::orderBy('downloads', 'desc')->take(5)->get(),
+        ];
+
+        return view('admin.templates.stats', compact('stats'));
     }
 }

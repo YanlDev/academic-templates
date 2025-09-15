@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -13,29 +12,18 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens;
-
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'is_admin', // Agregar este campo
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -43,25 +31,54 @@ class User extends Authenticatable
         'two_factor_secret',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean', // Agregar este cast
+    ];
+
     protected $appends = [
         'profile_photo_url',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    // Relaciones
+    public function purchases()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Purchase::class);
+    }
+
+    public function downloadLogs()
+    {
+        return $this->hasMany(DownloadLog::class);
+    }
+
+    // Scopes
+    public function scopeAdmins($query)
+    {
+        return $query->where('is_admin', true);
+    }
+
+    public function scopeCustomers($query)
+    {
+        return $query->where('is_admin', false);
+    }
+
+    // Methods
+    public function isAdmin()
+    {
+        return $this->is_admin;
+    }
+
+    public function getTotalPurchasesAttribute()
+    {
+        return $this->purchases()->where('status', 'completed')->sum('amount');
+    }
+
+    public function getPurchasedTemplatesAttribute()
+    {
+        return $this->purchases()
+            ->where('status', 'completed')
+            ->with('template')
+            ->get()
+            ->pluck('template');
     }
 }

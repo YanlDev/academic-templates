@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -32,15 +32,30 @@ class TemplateCategory extends Model
         return $this->hasMany(Template::class, 'category_id');
     }
 
+    public function activeTemplates()
+    {
+        return $this->hasMany(Template::class, 'category_id')->where('active', true);
+    }
+
     // Scopes
     public function scopeActive($query)
     {
         return $query->where('active', true);
     }
 
-    // Accessors
-    public function getActiveTemplatesCountAttribute()
+    public function scopeOrdered($query)
     {
-        return $this->templates()->active()->count();
+        return $query->orderBy('sort_order');
+    }
+
+    // Accessors
+    public function getTemplatesCountAttribute()
+    {
+        return $this->activeTemplates()->count();
+    }
+
+    public function getIconClassAttribute()
+    {
+        return 'fas fa-' . $this->icon;
     }
 }
