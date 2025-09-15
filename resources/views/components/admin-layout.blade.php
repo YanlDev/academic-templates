@@ -30,19 +30,25 @@
       }"
 >
 <!-- Cortina negra para móvil -->
-<div class="fixed inset-0 bg-gray-900 opacity-50 z-20 sm:hidden"
-     style="display:none"
-     x-show="sidebarOpen"
-     x-on:click="sidebarOpen = false">
+<div x-show="sidebarOpen"
+     x-cloak
+     x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="sidebarOpen = false"
+     class="fixed inset-0 bg-gray-900 bg-opacity-75 z-30 sm:hidden">
 </div>
 
 @include('layouts.partials.admin.navbar')
 @include('layouts.partials.admin.sidebar')
 
-<div class="p-4 sm:ml-64">
+<div class="transition-all duration-300 p-4 sm:ml-64">
     <div class="mt-14">
         @include('layouts.partials.admin.breadcrum')
-        <div class="p-4 border-2 border-gray-200 border-dashed rounded-lg">
+        <div class="p-4 bg-gray-50 min-h-screen">
             {{$slot}}
         </div>
     </div>
@@ -64,5 +70,6 @@
         Swal.fire(data[0])
     });
 </script>
+
 </body>
 </html>

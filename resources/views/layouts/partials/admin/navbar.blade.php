@@ -4,6 +4,7 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start rtl:justify-end">
                 <!-- Botón para toggle del sidebar (visible solo en móvil) -->
+                {{--  usamos para abrir y cerrar el menu --}}
                 <button x-on:click="sidebarOpen = !sidebarOpen"
                         data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar"
                         type="button"
@@ -16,50 +17,67 @@
                     </svg>
                 </button>
                 <!-- Logo -->
-                <a href="{{ route('admin.categories.index') }}" class="flex ms-2 md:me-24">
-                    <span
-                        class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">Academic Templates Pro</span>
+                <a href="#" class="flex ms-2 md:me-24">
+                    <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">MiApp</span>
                 </a>
             </div>
-            <!-- Perfil del usuario -->
+            <!-- Perfil de usuario -->
             <div class="flex items-center">
                 <div class="flex items-center ms-3">
-                    <div>
-                        <button type="button"
-                                class="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300"
-                                aria-expanded="false" data-dropdown-toggle="dropdown-user">
-                            <span class="sr-only">Open user menu</span>
-                            <img class="w-8 h-8 rounded-full" src="{{ Auth::user()->profile_photo_url }}"
-                                 alt="user photo">
-                        </button>
-                    </div>
-                    <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded shadow"
-                         id="dropdown-user">
-                        <div class="px-4 py-3" role="none">
-                            <p class="text-sm text-gray-900" role="none">
-                                {{ Auth::user()->name }}
-                            </p>
-                            <p class="text-sm font-medium text-gray-900 truncate" role="none">
-                                {{ Auth::user()->email }}
-                            </p>
-                        </div>
-                        <ul class="py-1" role="none">
-                            <li>
-                                <a href="{{ route('profile.show') }}"
-                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Perfil</a>
-                            </li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                            class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                            role="menuitem">
-                                        Cerrar sesión
+                    <!-- Dropdown menu -->
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
+                                <button
+                                    class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
+                                    <img class="size-8 rounded-full object-cover"
+                                         src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"/>
+                                </button>
+                            @else
+                                <span class="inline-flex rounded-md">
+                                    <button type="button"
+                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none focus:bg-gray-50 active:bg-gray-50 transition ease-in-out duration-150">
+                                        {{ Auth::user()->name }}
+
+                                        <svg class="ms-2 -me-0.5 size-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                             viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+                                        </svg>
                                     </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+                                </span>
+                            @endif
+                        </x-slot>
+
+                        <x-slot name="content">
+                            <!-- Account Management -->
+                            <div class="block px-4 py-2 text-xs text-gray-400">
+                                {{ __('Manage Account') }}
+                            </div>
+
+                            <x-dropdown-link href="{{ route('profile.show') }}">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+
+                            @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
+                                <x-dropdown-link href="{{ route('api-tokens.index') }}">
+                                    {{ __('API Tokens') }}
+                                </x-dropdown-link>
+                            @endif
+
+                            <div class="border-t border-gray-200"></div>
+
+                            <!-- Authentication -->
+                            <form method="POST" action="{{ route('logout') }}" x-data>
+                                @csrf
+
+                                <x-dropdown-link href="{{ route('logout') }}"
+                                                 @click.prevent="$root.submit();">
+                                    {{ __('Log Out') }}
+                                </x-dropdown-link>
+                            </form>
+                        </x-slot>
+                    </x-dropdown>
                 </div>
             </div>
         </div>

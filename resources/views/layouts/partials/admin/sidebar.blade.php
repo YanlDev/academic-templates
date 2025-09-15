@@ -3,7 +3,7 @@ $links = [
     [
         'icon' => 'fa-solid fa-gauge',
         'name' => 'Dashboard',
-        'url' => route('admin.categories.index'), // Por ahora, después haremos admin.dashboard
+        'url' => route('admin.dashboard'),
         'active' => request()->routeIs('admin.dashboard')
     ],
     [
@@ -15,19 +15,25 @@ $links = [
     [
         'icon' => 'fa-solid fa-file-excel',
         'name' => 'Plantillas',
-        'url' => '#', // Después: route('admin.templates.index')
-        'active' => request()->routeIs('admin.templates.*')
+        'url' => '#',
+        'active' => false
     ]
 ]
 ?>
 
     <!-- Sidebar -->
 <aside id="logo-sidebar"
+       x-transition:enter="transform transition ease-in-out duration-300"
+       x-transition:enter-start="-translate-x-full"
+       x-transition:enter-end="translate-x-0"
+       x-transition:leave="transform transition ease-in-out duration-300"
+       x-transition:leave-start="translate-x-0"
+       x-transition:leave-end="-translate-x-full"
        :class="{
-        'translate-x-0 ease-out': sidebarOpen,
-        '-translate-x-full ease-in': !sidebarOpen
+        'translate-x-0': sidebarOpen,
+        '-translate-x-full': !sidebarOpen
        }"
-       class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform bg-white border-r border-gray-200 sm:translate-x-0"
+       class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transform bg-white border-r border-gray-200 sm:translate-x-0 transition-transform duration-300 ease-in-out"
        aria-label="Sidebar">
     <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
         <ul class="space-y-2 font-medium">
