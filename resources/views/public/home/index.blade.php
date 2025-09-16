@@ -1,35 +1,6 @@
 <x-public-layout>
     <x-slot name="title">Inicio</x-slot>
 
-    <!-- Hero Section -->
-    <section class="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6">
-                    Potencia tu
-                    <span class="text-yellow-400">Éxito Académico</span>
-                </h1>
-                <p class="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-                    Plantillas Excel profesionales, servicios académicos y cursos especializados
-                    para estudiantes y profesionales
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <!-- ✅ CAMBIADO: Enlaces temporales -->
-                    <a href="#"
-                       class="bg-yellow-400 text-blue-900 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-yellow-300 transition-colors inline-flex items-center justify-center">
-                        <i class="fas fa-file-excel mr-2"></i>
-                        Explorar Plantillas
-                    </a>
-                    <a href="#"
-                       class="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors inline-flex items-center justify-center">
-                        <i class="fas fa-graduation-cap mr-2"></i>
-                        Ver Servicios
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Estadísticas -->
     <section class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
